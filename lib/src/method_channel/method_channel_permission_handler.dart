@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/services.dart';
 
 import '../../permission_handler_platform_interface.dart';
@@ -11,7 +12,7 @@ const MethodChannel _methodChannel =
 class MethodChannelPermissionHandler extends PermissionHandlerPlatform {
   /// Checks the current status of the given [Permission].
   Future<PermissionStatus> checkPermissionStatus(Permission permission) async {
-    final dynamic status = await _methodChannel.invokeMethod<dynamic>(
+    final status = await _methodChannel.invokeMethod(
         'checkPermissionStatus', permission.value);
 
     return Codec.decodePermissionStatus(status);
@@ -39,7 +40,7 @@ class MethodChannelPermissionHandler extends PermissionHandlerPlatform {
   ///     device's capability to place & connect phone calls as it also depends
   ///     on the network condition.
   Future<ServiceStatus> checkServiceStatus(Permission permission) async {
-    final dynamic status = await _methodChannel.invokeMethod<dynamic>(
+    final status = await _methodChannel.invokeMethod(
         'checkServiceStatus', permission.value);
 
     return Codec.decodeServiceStatus(status);
@@ -50,8 +51,9 @@ class MethodChannelPermissionHandler extends PermissionHandlerPlatform {
   /// Returns [true] if the app settings page could be opened, otherwise
   /// [false].
   Future<bool> openAppSettings() async {
-    final bool wasOpened = await _methodChannel.invokeMethod('openAppSettings');
-    return wasOpened;
+    final wasOpened = await _methodChannel.invokeMethod('openAppSettings');
+
+    return wasOpened ?? false;
   }
 
   /// Requests the user for access to the supplied list of [Permission]s, if
@@ -60,9 +62,9 @@ class MethodChannelPermissionHandler extends PermissionHandlerPlatform {
   /// Returns a [Map] containing the status per requested [Permission].
   Future<Map<Permission, PermissionStatus>> requestPermissions(
       List<Permission> permissions) async {
-    final List<int> data = Codec.encodePermissions(permissions);
-    final dynamic status =
-        await _methodChannel.invokeMethod<dynamic>('requestPermissions', data);
+    final data = Codec.encodePermissions(permissions);
+    final status =
+        await _methodChannel.invokeMethod('requestPermissions', data);
 
     return Codec.decodePermissionRequestResult(Map<int, int>.from(status));
   }
@@ -73,9 +75,9 @@ class MethodChannelPermissionHandler extends PermissionHandlerPlatform {
   /// returns [false].
   Future<bool> shouldShowRequestPermissionRationale(
       Permission permission) async {
-    final bool shouldShowRationale = await _methodChannel.invokeMethod(
+    final shouldShowRationale = await _methodChannel.invokeMethod(
         'shouldShowRequestPermissionRationale', permission.value);
 
-    return shouldShowRationale;
+    return shouldShowRationale ?? false;
   }
 }

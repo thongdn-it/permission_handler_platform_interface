@@ -2,14 +2,11 @@ part of permission_handler_platform_interface;
 
 /// Defines the state of a [Permission].
 enum PermissionStatus {
-  /// The permission wasn't requested yet.
-  undetermined,
+  /// The user denied access to the requested feature.
+  denied,
 
   /// The user granted access to the requested feature.
   granted,
-
-  /// The user denied access to the requested feature.
-  denied,
 
   /// The OS denied access to the requested feature. The user cannot change
   /// this app's status, possibly due to active restrictions such as parental
@@ -21,9 +18,9 @@ enum PermissionStatus {
   /// *Only supported on iOS (iOS14+).*
   limited,
 
-  /// The user denied access to the requested feature and selected to never
-  /// again show a request for this permission. The user may still change the
-  /// permission status in the settings.
+  /// Permission to the requested feature is permanently denied, the permission
+  /// dialog will not be shown when requesting this permission. The user may
+  /// still change the permission status in the settings.
   /// *Only supported on Android.*
   permanentlyDenied,
 
@@ -40,11 +37,9 @@ extension PermissionStatusValue on PermissionStatus {
         return 1;
       case PermissionStatus.restricted:
         return 2;
-      case PermissionStatus.undetermined:
+      case PermissionStatus.limited:
         return 3;
       case PermissionStatus.permanentlyDenied:
-        return 5;
-      case PermissionStatus.limited:
         return 4;
       default:
         throw UnimplementedError();
@@ -56,7 +51,6 @@ extension PermissionStatusValue on PermissionStatus {
       PermissionStatus.denied,
       PermissionStatus.granted,
       PermissionStatus.restricted,
-      PermissionStatus.undetermined,
       PermissionStatus.limited,
       PermissionStatus.permanentlyDenied,
     ][value];
@@ -64,14 +58,11 @@ extension PermissionStatusValue on PermissionStatus {
 }
 
 extension PermissionStatusGetters on PermissionStatus {
-  /// If the permission was never requested before.
-  bool get isUndetermined => this == PermissionStatus.undetermined;
+  /// If the user denied access to the requested feature.
+  bool get isDenied => this == PermissionStatus.denied;
 
   /// If the user granted access to the requested feature.
   bool get isGranted => this == PermissionStatus.granted;
-
-  /// If the user denied access to the requested feature.
-  bool get isDenied => this == PermissionStatus.denied;
 
   /// If the OS denied access to the requested feature. The user cannot change
   /// this app's status, possibly due to active restrictions such as parental
@@ -83,15 +74,15 @@ extension PermissionStatusGetters on PermissionStatus {
   /// again show a request for this permission. The user may still change the
   /// permission status in the settings.
   /// *Only supported on Android.*
+  ///
+  /// WARNING: This can only be determined AFTER requesting this permission.
+  /// Therefore make a `request` call first.
   bool get isPermanentlyDenied => this == PermissionStatus.permanentlyDenied;
 
   bool get isLimited => this == PermissionStatus.limited;
 }
 
 extension FuturePermissionStatusGetters on Future<PermissionStatus> {
-  /// If the permission was never requested before.
-  Future<bool> get isUndetermined async => (await this).isUndetermined;
-
   /// If the user granted access to the requested feature.
   Future<bool> get isGranted async => (await this).isGranted;
 
